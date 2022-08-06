@@ -1,10 +1,12 @@
-﻿using System;
+﻿using SkiaSharp;
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 namespace Maze;
 
-public class PolarGrid : IGraph<PolarPosition>
+public class PolarGrid : IGraph<PolarPosition>, ISVGDrawable
 {
 	public IReadOnlyList<IReadOnlyList<PolarCell>> Grid { get; }
 
@@ -24,7 +26,7 @@ public class PolarGrid : IGraph<PolarPosition>
 			double radius = (double)l / layers;
 			double circumference = 2.0d * Math.PI * radius;
 
-			int previousCount = grid[^1].Count;
+			int previousCount = grid[l - 1].Count;
 			double estimatedCellWidth = circumference / previousCount;
 			double ratio = Math.Round(estimatedCellWidth / (1.0d / layers));
 
@@ -41,7 +43,7 @@ public class PolarGrid : IGraph<PolarPosition>
 				})
 				.ToArray();
 
-			foreach (var innerCell in grid[^2])
+			foreach (var innerCell in grid[l - 1])
 			{
 				innerCell.Outward = Enumerable.Range(0, count / previousCount).Select(_ => true).ToArray();
 			}
@@ -68,7 +70,7 @@ public class PolarGrid : IGraph<PolarPosition>
 		{
 			yield return new PolarPosition(current.Layer, (current.Cell + 1) % (uint)Grid[(int)current.Layer].Count);
 		}
-		if (current.Layer < Grid.Count)
+		if (current.Layer + 1 < Grid.Count)
 		{
 			var aOutwardCount = Grid[(int)current.Layer][(int)current.Cell].Outward.Length;
 			for (uint i = 0; i < aOutwardCount; i++)
@@ -121,6 +123,53 @@ public class PolarGrid : IGraph<PolarPosition>
 		else
 		{
 			throw new ArgumentException("Positions are not neighbours.");
+		}
+	}
+
+	public void DrawSVG(Stream outputStream)
+	{
+		const float LAYER_SIZE = 100.0f;
+
+		var canvasRect = SKRect.Create(Grid.Count * LAYER_SIZE, Grid.Count * LAYER_SIZE);
+		using var canvas = SKSvgCanvas.Create(canvasRect, outputStream);
+		using var paint = new SKPaint { Color = SKColors.Black, IsStroke = true };
+
+		for (int layer = 0; layer < Grid.Count; layer++)
+		{
+			int cellCount = Grid[layer].Count;
+			float cellWidth = 360.0f / cellCount;
+
+			var ovalSize = new SKSize((layer + 1) * LAYER_SIZE, (layer + 1) * LAYER_SIZE);
+			var ovalTopLeft = new SKPoint((canvasRect.Width - ovalSize.Width) / 2.0f, (canvasRect.Height - ovalSize.Height) / 2.0f);
+			var oval = SKRect.Create(ovalTopLeft, ovalSize);
+			for (int cell = 0; cell < cellCount; cell++)
+			{
+				using var line = new SKPath();
+
+				int wallCount = Grid[layer][cell].Outward.Length;
+				float wallWidth = cellWidth / wallCount;
+				for (int wall = 0; wall < wallCount; wall++)
+				{
+					if (Grid[layer][cell].Outward[wall])
+					{
+						line.ArcTo(oval, cellWidth * cell + wallWidth * wall, wallWidth, true);
+					}
+				}
+
+				if (Grid[layer][cell].Clockwise)
+				{
+					float radius = LAYER_SIZE * layer / 2.0f;
+					float angle = cellWidth * (cell + 1);
+					line.MoveTo(
+						canvasRect.Width / 2.0f + (radius + LAYER_SIZE / 2.0f) * MathF.Cos(angle * MathF.PI / 180.0f),
+						canvasRect.Height / 2.0f + (radius + LAYER_SIZE / 2.0f) * MathF.Sin(angle * MathF.PI / 180.0f));
+					line.LineTo(
+						canvasRect.Width / 2.0f + radius * MathF.Cos(angle * MathF.PI / 180.0f),
+						canvasRect.Height / 2.0f + radius * MathF.Sin(angle * MathF.PI / 180.0f));
+				}
+
+				canvas.DrawPath(line, paint);
+			}
 		}
 	}
 }
