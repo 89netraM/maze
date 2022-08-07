@@ -15,7 +15,7 @@ public class MazeService
 	{
 		var maze = new PolarGrid(9);
 		var entries = maze.GenerateEntries(3);
-		MazeGenerators.DeapthFirstSearch(maze, entries, Random.Shared);
+		maze.DeapthFirstSearch(entries, Random.Shared);
 		maze.OpenEntries(entries);
 		return maze;
 	}
