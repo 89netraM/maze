@@ -25,20 +25,30 @@ public static class MazeGenerators
 			{
 				if (toVisit.TryPop(out TNode? current) && current is not null)
 				{
-					var neighbours = graph.Neighbours(current).Where(n => !visited.Contains(n)).ToArray();
-					if (neighbours.Length > 1)
-					{
-						toVisit.Push(current);
-					}
-					if (neighbours.Length > 0)
-					{
-						var next = neighbours[random.Next(neighbours.Length)];
-						graph[current, next] = false;
-						visited.Add(next);
-						toVisit.Push(next);
-					}
+					VisitNode(toVisit, current);
 				}
 			}
+		}
+
+		void VisitNode(Stack<TNode> toVisit, TNode current)
+		{
+			var neighbours = graph.Neighbours(current).Where(n => !visited.Contains(n)).ToArray();
+			if (neighbours.Length > 1)
+			{
+				toVisit.Push(current);
+			}
+			if (neighbours.Length > 0)
+			{
+				RemoveNeighbouringWall(toVisit, current, neighbours);
+			}
+		}
+
+		void RemoveNeighbouringWall(Stack<TNode> toVisit, TNode current, IReadOnlyList<TNode> neighbours)
+		{
+			var next = neighbours[random.Next(neighbours.Count)];
+			graph[current, next] = false;
+			visited.Add(next);
+			toVisit.Push(next);
 		}
 	}
 
