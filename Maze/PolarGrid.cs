@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace Maze;
 
-public class PolarGrid : IGraph<PolarPosition>, ISVGDrawable
+public class PolarGrid : IGraph<PolarPosition>, IEnterable<PolarPosition>, ISVGDrawable
 {
 	public IReadOnlyList<IReadOnlyList<PolarCell>> Grid { get; }
 
@@ -165,6 +165,19 @@ public class PolarGrid : IGraph<PolarPosition>, ISVGDrawable
 			{
 				throw new ArgumentException("Positions are not neighbours.");
 			}
+		}
+	}
+
+	public void OpenEntries(IEnumerable<PolarPosition> entries)
+	{
+		foreach (var entry in entries)
+		{
+			OpenEntry(entry);
+		}
+
+		void OpenEntry(PolarPosition entry)
+		{
+			Grid[(int)entry.Layer][(int)entry.Cell].Outward = new[] { false };
 		}
 	}
 
