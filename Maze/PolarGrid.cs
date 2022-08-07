@@ -168,6 +168,18 @@ public class PolarGrid : IGraph<PolarPosition>, IEnterable<PolarPosition>, ISVGD
 		}
 	}
 
+	public IEnumerable<PolarPosition> GenerateEntries(uint entryCount)
+	{
+		if (entryCount == 0 || entryCount > Grid[^1].Count)
+		{
+			throw new ArgumentOutOfRangeException(paramName: nameof(entryCount));
+		}
+
+		var spacing = Grid[^1].Count / entryCount;
+		return Enumerable.Range(0, (int)entryCount)
+			.Select(i => new PolarPosition((uint)Grid.Count - 1, (uint)(i * spacing)));
+	}
+
 	public void OpenEntries(IEnumerable<PolarPosition> entries)
 	{
 		foreach (var entry in entries)
