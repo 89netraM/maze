@@ -5,16 +5,16 @@ namespace Maze.Web.Services;
 
 public class MazeService
 {
-	public Stream GenerateMazeSVG()
+	public Stream GenerateMazeSVG(uint size, uint entryCount)
 	{
-		var maze = GenerateMaze();
+		var maze = GenerateMaze(size, entryCount);
 		return DrawMazeSVG(maze);
 	}
 
-	private ISVGDrawable GenerateMaze()
+	private ISVGDrawable GenerateMaze(uint size, uint entryCount)
 	{
-		var maze = new PolarGrid(9);
-		var entries = maze.GenerateEntries(3);
+		var maze = new PolarGrid(size);
+		var entries = maze.GenerateEntries(entryCount);
 		maze.DeapthFirstSearch(entries, Random.Shared);
 		maze.OpenEntries(entries);
 		return maze;

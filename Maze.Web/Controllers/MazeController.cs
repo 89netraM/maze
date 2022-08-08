@@ -2,6 +2,7 @@ using Maze.Web.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
+using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Threading.Tasks;
 
@@ -18,11 +19,24 @@ public class MazeController : ControllerBase
 		this.mazeService = mazeService ?? throw new ArgumentNullException(nameof(mazeService));
 	}
 
+	/// <summary>
+	/// Generates a random maze.
+	/// </summary>
+	/// <param name="size">The size of the maze.</param>
+	/// <param name="entryCount">The number of entry points to the maze.</param>
+	/// <response code="200">Returns an SVG image of the maze.</response>
+	/// <response code="400">The provided input is invalid.</response>
 	[HttpGet]
 	[Produces("image/svg+xml")]
-	public Task Get()
+	[ProducesResponseType(StatusCodes.Status200OK)]
+	[ProducesResponseType(StatusCodes.Status400BadRequest)]
+	public Task Get(
+		[FromQuery, Range(1, int.MaxValue)]
+			uint size = 9,
+		[FromQuery, Range(1, int.MaxValue)]
+			uint entryCount = 3)
 	{
-		using var mazeSvgStream = mazeService.GenerateMazeSVG();
+		using var mazeSvgStream = mazeService.GenerateMazeSVG(size, entryCount);
 		return WriteSVGStream(mazeSvgStream);
 	}
 
