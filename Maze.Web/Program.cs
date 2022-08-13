@@ -1,16 +1,19 @@
 using Maze.Web.Services;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using System;
 using System.IO;
 using System.Reflection;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddSingleton<MazeService>();
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+	.AddJsonOptions(JsonOptionsSetup);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(SwaggerGenSetup);
 
@@ -22,6 +25,11 @@ app.UseSwaggerUI();
 app.MapControllers();
 
 app.Run();
+
+static void JsonOptionsSetup(JsonOptions options)
+{
+	options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+}
 
 static void SwaggerGenSetup(SwaggerGenOptions options)
 {
