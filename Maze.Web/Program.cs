@@ -1,6 +1,7 @@
 using Maze.Web.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using System;
@@ -12,6 +13,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddSingleton<MazeService>();
 
+builder.Services.Configure<KestrelServerOptions>(ConfigureKestrel);
 builder.Services.AddControllers()
 	.AddJsonOptions(JsonOptionsSetup);
 builder.Services.AddEndpointsApiExplorer();
@@ -25,6 +27,11 @@ app.UseSwaggerUI();
 app.MapControllers();
 
 app.Run();
+
+static void ConfigureKestrel(KestrelServerOptions options)
+{
+	options.AllowSynchronousIO = true;
+}
 
 static void JsonOptionsSetup(JsonOptions options)
 {

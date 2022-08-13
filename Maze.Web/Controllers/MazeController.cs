@@ -33,7 +33,7 @@ public class MazeController : ControllerBase
 	[Produces("image/svg+xml")]
 	[ProducesResponseType(StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status400BadRequest)]
-	public Task Get(
+	public void Get(
 		[FromRoute]
 			MazeKind mazeKind = MazeKind.Polar,
 		[FromQuery, Range(1, int.MaxValue)]
@@ -43,15 +43,8 @@ public class MazeController : ControllerBase
 		[FromQuery]
 			int? seed = null)
 	{
-		using var mazeSvgStream = mazeService.GenerateMazeSVG(size, entryCount, mazeKind, seed);
-		return WriteSVGStream(mazeSvgStream);
-	}
-
-	private Task WriteSVGStream(Stream svgStream)
-	{
 		Response.StatusCode = StatusCodes.Status200OK;
 		Response.ContentType = "image/svg+xml";
-		Response.ContentLength = svgStream.Length;
-		return svgStream.CopyToAsync(Response.Body);
+		mazeService.GenerateMazeSVG(Response.Body, size, entryCount, mazeKind, seed);
 	}
 }

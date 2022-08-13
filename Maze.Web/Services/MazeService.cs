@@ -6,7 +6,7 @@ namespace Maze.Web.Services;
 
 public class MazeService
 {
-	public Stream GenerateMazeSVG(uint size, uint entryCount, MazeKind mazeKind, int? seed)
+	public void GenerateMazeSVG(Stream outputStream, uint size, uint entryCount, MazeKind mazeKind, int? seed)
 	{
 		var maze = mazeKind switch
 		{
@@ -14,7 +14,7 @@ public class MazeService
 			MazeKind.HexHex => GenerateHexHexMaze(size, entryCount, seed),
 			_ => throw new ArgumentException(),
 		};
-		return DrawMazeSVG(maze);
+		maze.DrawSVG(outputStream);
 	}
 
 	private ISVGDrawable GeneratePolarMaze(uint size, uint entryCount, int? seed)
@@ -37,13 +37,5 @@ public class MazeService
 		var entries = maze.GenerateEntries(entryCount);
 		maze.DeapthFirstSearch(entries, random);
 		maze.OpenEntries(entries);
-	}
-
-	private Stream DrawMazeSVG(ISVGDrawable svgDrawable)
-	{
-		var outputStream = new MemoryStream();
-		svgDrawable.DrawSVG(outputStream);
-		outputStream.Position = 0;
-		return outputStream;
 	}
 }
