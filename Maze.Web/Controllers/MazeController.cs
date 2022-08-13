@@ -26,6 +26,7 @@ public class MazeController : ControllerBase
 	/// <param name="mazeKind">The shape of the maze.</param>
 	/// <param name="size">The size of the maze.</param>
 	/// <param name="entryCount">The number of entry points to the maze.</param>
+	/// <param name="seed">Seed that produces the same maze each time.</param>
 	/// <response code="200">Returns an SVG image of the maze.</response>
 	/// <response code="400">The provided input is invalid.</response>
 	[HttpGet("{mazeKind?}")]
@@ -38,9 +39,11 @@ public class MazeController : ControllerBase
 		[FromQuery, Range(1, int.MaxValue)]
 			uint size = 9,
 		[FromQuery, Range(1, int.MaxValue)]
-			uint entryCount = 3)
+			uint entryCount = 3,
+		[FromQuery]
+			int? seed = null)
 	{
-		using var mazeSvgStream = mazeService.GenerateMazeSVG(size, entryCount, mazeKind);
+		using var mazeSvgStream = mazeService.GenerateMazeSVG(size, entryCount, mazeKind, seed);
 		return WriteSVGStream(mazeSvgStream);
 	}
 

@@ -6,35 +6,36 @@ namespace Maze.Web.Services;
 
 public class MazeService
 {
-	public Stream GenerateMazeSVG(uint size, uint entryCount, MazeKind mazeKind)
+	public Stream GenerateMazeSVG(uint size, uint entryCount, MazeKind mazeKind, int? seed)
 	{
 		var maze = mazeKind switch
 		{
-			MazeKind.Polar => GeneratePolarMaze(size, entryCount),
-			MazeKind.HexHex => GenerateHexHexMaze(size, entryCount),
+			MazeKind.Polar => GeneratePolarMaze(size, entryCount, seed),
+			MazeKind.HexHex => GenerateHexHexMaze(size, entryCount, seed),
 			_ => throw new ArgumentException(),
 		};
 		return DrawMazeSVG(maze);
 	}
 
-	private ISVGDrawable GeneratePolarMaze(uint size, uint entryCount)
+	private ISVGDrawable GeneratePolarMaze(uint size, uint entryCount, int? seed)
 	{
 		var maze = new PolarGrid(size);
-		GenerateMaze<PolarGrid, PolarPosition>(maze, entryCount);
+		GenerateMaze<PolarGrid, PolarPosition>(maze, entryCount, seed);
 		return maze;
 	}
 
-	private ISVGDrawable GenerateHexHexMaze(uint size, uint entryCount)
+	private ISVGDrawable GenerateHexHexMaze(uint size, uint entryCount, int? seed)
 	{
 		var maze = new HexHexGrid(size);
-		GenerateMaze<HexHexGrid, HexCoordinate>(maze, entryCount);
+		GenerateMaze<HexHexGrid, HexCoordinate>(maze, entryCount, seed);
 		return maze;
 	}
 
-	private void GenerateMaze<TMaze, TNode>(TMaze maze, uint entryCount) where TMaze : IGraph<TNode>, IEnterable<TNode>, ISVGDrawable
+	private void GenerateMaze<TMaze, TNode>(TMaze maze, uint entryCount, int? seed) where TMaze : IGraph<TNode>, IEnterable<TNode>, ISVGDrawable
 	{
+		var random = seed is int s ? new Random(s) : Random.Shared;
 		var entries = maze.GenerateEntries(entryCount);
-		maze.DeapthFirstSearch(entries, Random.Shared);
+		maze.DeapthFirstSearch(entries, random);
 		maze.OpenEntries(entries);
 	}
 
