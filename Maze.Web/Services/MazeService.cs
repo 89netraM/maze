@@ -12,6 +12,7 @@ public class MazeService
 		{
 			MazeKind.Polar => GenerateMaze<PolarGrid, PolarPosition>(config),
 			MazeKind.HexHex => GenerateMaze<HexHexGrid, HexCoordinate>(config),
+			MazeKind.TriHex => GenerateMaze<TriHexGrid, HexCoordinate>(config),
 			MazeKind.Rect => GenerateMaze<RectGrid, RectCoordinate>(config),
 			_ => throw new ArgumentException(),
 		};

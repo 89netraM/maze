@@ -4,5 +4,6 @@ public enum MazeKind
 {
 	Polar,
 	HexHex,
+	TriHex,
 	Rect,
 }
