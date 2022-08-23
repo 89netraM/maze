@@ -12,6 +12,7 @@ public class MazeService
 		{
 			MazeKind.Polar => GeneratePolarMaze(size, entryCount, seed),
 			MazeKind.HexHex => GenerateHexHexMaze(size, entryCount, seed),
+			MazeKind.Rect => GenerateRectMaze(size, entryCount, seed),
 			_ => throw new ArgumentException(),
 		};
 		maze.DrawSVG(outputStream);
@@ -28,6 +29,13 @@ public class MazeService
 	{
 		var maze = new HexHexGrid(size);
 		GenerateMaze<HexHexGrid, HexCoordinate>(maze, entryCount, seed);
+		return maze;
+	}
+
+	private ISVGDrawable GenerateRectMaze(uint size, uint entryCount, int? seed)
+	{
+		var maze = new RectGrid(size);
+		GenerateMaze<RectGrid, RectCoordinate>(maze, entryCount, seed);
 		return maze;
 	}
 
