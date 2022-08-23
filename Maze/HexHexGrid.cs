@@ -1,12 +1,13 @@
-﻿using SkiaSharp;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace Maze;
 
-public class HexHexGrid : HexGrid, IEnterable<HexCoordinate>
+public class HexHexGrid : HexGrid, IGraphCreator<HexHexGrid>, IEnterable<HexCoordinate>
 {
+	public static HexHexGrid Create(uint size) => new(size);
+
 	private static IReadOnlyDictionary<HexCoordinate, HexNode> GenerateHexGrid(uint size)
 	{
 		var map = new Dictionary<HexCoordinate, HexNode>();

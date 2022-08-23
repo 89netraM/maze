@@ -6,43 +6,31 @@ namespace Maze.Web.Services;
 
 public class MazeService
 {
-	public void GenerateMazeSVG(Stream outputStream, uint size, uint entryCount, MazeKind mazeKind, int? seed)
+	public void GenerateMazeSVG(Stream outputStream, MazeKind mazeKind, MazeConfig config)
 	{
 		var maze = mazeKind switch
 		{
-			MazeKind.Polar => GeneratePolarMaze(size, entryCount, seed),
-			MazeKind.HexHex => GenerateHexHexMaze(size, entryCount, seed),
-			MazeKind.Rect => GenerateRectMaze(size, entryCount, seed),
+			MazeKind.Polar => GenerateMaze<PolarGrid, PolarPosition>(config),
+			MazeKind.HexHex => GenerateMaze<HexHexGrid, HexCoordinate>(config),
+			MazeKind.Rect => GenerateMaze<RectGrid, RectCoordinate>(config),
 			_ => throw new ArgumentException(),
 		};
 		maze.DrawSVG(outputStream);
 	}
 
-	private ISVGDrawable GeneratePolarMaze(uint size, uint entryCount, int? seed)
+	private ISVGDrawable GenerateMaze<TMaze, TNode>(MazeConfig config)
+		where TMaze : IGraph<TNode>, IGraphCreator<TMaze>, IEnterable<TNode>, ISVGDrawable
 	{
-		var maze = new PolarGrid(size);
-		GenerateMaze<PolarGrid, PolarPosition>(maze, entryCount, seed);
+		var maze = TMaze.Create(config.Size);
+		GenerateMaze<TMaze, TNode>(maze, config);
 		return maze;
 	}
 
-	private ISVGDrawable GenerateHexHexMaze(uint size, uint entryCount, int? seed)
+	private void GenerateMaze<TMaze, TNode>(TMaze maze, MazeConfig config)
+		where TMaze : IGraph<TNode>, IEnterable<TNode>
 	{
-		var maze = new HexHexGrid(size);
-		GenerateMaze<HexHexGrid, HexCoordinate>(maze, entryCount, seed);
-		return maze;
-	}
-
-	private ISVGDrawable GenerateRectMaze(uint size, uint entryCount, int? seed)
-	{
-		var maze = new RectGrid(size);
-		GenerateMaze<RectGrid, RectCoordinate>(maze, entryCount, seed);
-		return maze;
-	}
-
-	private void GenerateMaze<TMaze, TNode>(TMaze maze, uint entryCount, int? seed) where TMaze : IGraph<TNode>, IEnterable<TNode>, ISVGDrawable
-	{
-		var random = seed is int s ? new Random(s) : Random.Shared;
-		var entries = maze.GenerateEntries(entryCount);
+		var random = config.Seed is int s ? new Random(s) : Random.Shared;
+		var entries = maze.GenerateEntries(config.EntryCount);
 		maze.DeapthFirstSearch(entries, random);
 		maze.OpenEntries(entries);
 	}

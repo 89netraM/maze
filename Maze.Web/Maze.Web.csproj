@@ -3,6 +3,7 @@
 		<TargetFramework>net6.0</TargetFramework>
 		<ImplicitUsings>disable</ImplicitUsings>
 		<Nullable>enable</Nullable>
+		<EnablePreviewFeatures>true</EnablePreviewFeatures>
 		<DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 		<NoWarn>$(NoWarn);1591</NoWarn>

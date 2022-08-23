@@ -6,8 +6,10 @@ using System.Linq;
 
 namespace Maze;
 
-public class RectGrid : IGraph<RectCoordinate>, IEnterable<RectCoordinate>, ISVGDrawable
+public class RectGrid : IGraph<RectCoordinate>, IGraphCreator<RectGrid>, IEnterable<RectCoordinate>, ISVGDrawable
 {
+	public static RectGrid Create(uint size) => new(size);
+
 	public IReadOnlyList<IReadOnlyList<RectNode>> Grid { get; }
 
 	public bool this[RectCoordinate a, RectCoordinate b]

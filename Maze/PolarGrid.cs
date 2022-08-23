@@ -6,8 +6,10 @@ using System.Linq;
 
 namespace Maze;
 
-public class PolarGrid : IGraph<PolarPosition>, IEnterable<PolarPosition>, ISVGDrawable
+public class PolarGrid : IGraph<PolarPosition>, IGraphCreator<PolarGrid>, IEnterable<PolarPosition>, ISVGDrawable
 {
+	public static PolarGrid Create(uint size) => new(size);
+
 	public IReadOnlyList<IReadOnlyList<PolarCell>> Grid { get; }
 
 	public bool this[PolarPosition a, PolarPosition b]

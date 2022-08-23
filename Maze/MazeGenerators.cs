@@ -13,8 +13,7 @@ public static class MazeGenerators
 	/// </summary>
 	/// <param name="graph">A pre generated graph from which the maze is carved.</param>
 	/// <param name="starts">The starting points for the generation.</param>
-	public static void DeapthFirstSearch<TGraph, TNode>(this TGraph graph, IEnumerable<TNode> starts, Random random)
-		where TGraph : IGraph<TNode>
+	public static void DeapthFirstSearch<TNode>(this IGraph<TNode> graph, IEnumerable<TNode> starts, Random random)
 	{
 		var visited = new HashSet<TNode>(starts);
 		var toVisits = visited.Select(SingletonStack).ToArray();
