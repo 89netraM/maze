@@ -14,6 +14,7 @@ public class MazeService
 			MazeKind.HexHex => GenerateMaze<HexHexGrid, Vector2D<int>>(config),
 			MazeKind.TriHex => GenerateMaze<TriHexGrid, Vector2D<int>>(config),
 			MazeKind.Rect => GenerateMaze<RectGrid, Vector2D<uint>>(config),
+			MazeKind.Tri => GenerateMaze<TriGrid, Vector2D<int>>(config),
 			_ => throw new ArgumentException(),
 		};
 		maze.DrawSVG(outputStream);

@@ -6,4 +6,5 @@ public enum MazeKind
 	HexHex,
 	TriHex,
 	Rect,
+	Tri,
 }
