@@ -221,23 +221,11 @@ public class TriGrid : IGraph<Vector2D<int>>, IGraphCreator<TriGrid>, IEnterable
 			using var path = new SKPath();
 
 			path.MoveTo(left);
-			LineOrMoveTo(node.Left, upper);
-			LineOrMoveTo(node.Right, right);
-			LineOrMoveTo(node.Bottom, left);
+			path.LineOrMoveTo(node.Left, upper);
+			path.LineOrMoveTo(node.Right, right);
+			path.LineOrMoveTo(node.Bottom, left);
 
 			canvas.DrawPath(path, paint);
-
-			void LineOrMoveTo(bool line, SKPoint point)
-			{
-				if (line)
-				{
-					path.LineTo(point);
-				}
-				else
-				{
-					path.MoveTo(point);
-				}
-			}
 		}
 
 		static SKPoint TriToPixelCoordinates(Vector2D<int> coord) =>

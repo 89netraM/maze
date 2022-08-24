@@ -128,26 +128,14 @@ public abstract class HexGrid : IGraph<Vector2D<int>>, ISVGDrawable
 			using var path = new SKPath();
 
 			path.MoveTo(northWest);
-			LineOrMoveTo(node.NorthWest, north);
-			LineOrMoveTo(node.NorthEast, northEast);
-			LineOrMoveTo(node.East, southEast);
-			LineOrMoveTo(node.SouthEast, south);
-			LineOrMoveTo(node.SouthWest, southWest);
-			LineOrMoveTo(node.West, northWest);
+			path.LineOrMoveTo(node.NorthWest, north);
+			path.LineOrMoveTo(node.NorthEast, northEast);
+			path.LineOrMoveTo(node.East, southEast);
+			path.LineOrMoveTo(node.SouthEast, south);
+			path.LineOrMoveTo(node.SouthWest, southWest);
+			path.LineOrMoveTo(node.West, northWest);
 
 			canvas.DrawPath(path, paint);
-
-			void LineOrMoveTo(bool line, SKPoint point)
-			{
-				if (line)
-				{
-					path.LineTo(point);
-				}
-				else
-				{
-					path.MoveTo(point);
-				}
-			}
 		}
 
 		static SKPoint HexToPixelCoordinates(Vector2D<int> coord) =>

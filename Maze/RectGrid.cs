@@ -219,24 +219,12 @@ public class RectGrid : IGraph<Vector2D<uint>>, IGraphCreator<RectGrid>, IEntera
 			using var path = new SKPath();
 			
 			path.MoveTo(northWestCorner);
-			LineOrMoveTo(node.North, northWestCorner + northEastOffset);
-			LineOrMoveTo(node.East, northWestCorner + southEastOffset);
-			LineOrMoveTo(node.South, northWestCorner + southWestOffset);
-			LineOrMoveTo(node.West, northWestCorner);
+			path.LineOrMoveTo(node.North, northWestCorner + northEastOffset);
+			path.LineOrMoveTo(node.East, northWestCorner + southEastOffset);
+			path.LineOrMoveTo(node.South, northWestCorner + southWestOffset);
+			path.LineOrMoveTo(node.West, northWestCorner);
 
 			canvas.DrawPath(path, paint);
-
-			void LineOrMoveTo(bool line, SKPoint point)
-			{
-				if (line)
-				{
-					path.LineTo(point);
-				}
-				else
-				{
-					path.MoveTo(point);
-				}
-			}
 		}
 	}
 }
