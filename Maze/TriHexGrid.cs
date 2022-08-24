@@ -1,18 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Maze;
 
-public class TriHexGrid : HexGrid, IGraphCreator<TriHexGrid>, IEnterable<HexCoordinate>
+public class TriHexGrid : HexGrid, IGraphCreator<TriHexGrid>, IEnterable<Vector2D<int>>
 {
 	public static TriHexGrid Create(uint size) => new(size);
 
-	private static IReadOnlyDictionary<HexCoordinate, HexNode> GenerateHexGrid(uint size)
+	private static IReadOnlyDictionary<Vector2D<int>, HexNode> GenerateHexGrid(uint size)
 	{
-		var map = new Dictionary<HexCoordinate, HexNode>();
+		var map = new Dictionary<Vector2D<int>, HexNode>();
 
 		for (int i = 0; i < size; i++)
 		{
@@ -24,15 +22,15 @@ public class TriHexGrid : HexGrid, IGraphCreator<TriHexGrid>, IEnterable<HexCoor
 		void GenerateHexDiagonal(int diagonal)
 		{
 			int diagonalCount = (int)size - diagonal;
-			var coord = new HexCoordinate(diagonal, 0);
+			var coord = new Vector2D<int>(diagonal, 0);
 			for (int i = 0; i < diagonalCount; i++)
 			{
 				GenerateHexNode(coord);
-				coord += new HexCoordinate(1, -1);
+				coord += new Vector2D<int>(1, -1);
 			}
 		}
 
-		void GenerateHexNode(HexCoordinate coord)
+		void GenerateHexNode(Vector2D<int> coord)
 		{
 			var node = new HexNode();
 			if (coord.X + coord.Y == 0)
@@ -53,7 +51,7 @@ public class TriHexGrid : HexGrid, IGraphCreator<TriHexGrid>, IEnterable<HexCoor
 	public TriHexGrid(uint size) : base(GenerateHexGrid(size)) =>
 		(this.size) = (size);
 
-	public IEnumerable<HexCoordinate> GenerateEntries(uint entryCount) =>
+	public IEnumerable<Vector2D<int>> GenerateEntries(uint entryCount) =>
 		GenerateEntryIndices(entryCount)
 			.Select(EntryIndexToCoordinate);
 
@@ -64,7 +62,7 @@ public class TriHexGrid : HexGrid, IGraphCreator<TriHexGrid>, IEnterable<HexCoor
 		return Enumerable.Range(0, (int)entryCount).Select(i => i * spacing);
 	}
 
-	private HexCoordinate EntryIndexToCoordinate(int index)
+	private Vector2D<int> EntryIndexToCoordinate(int index)
 	{
 		if (size == 1)
 		{
@@ -88,14 +86,14 @@ public class TriHexGrid : HexGrid, IGraphCreator<TriHexGrid>, IEnterable<HexCoor
 	}
 
 
-	public void OpenEntries(IEnumerable<HexCoordinate> entries)
+	public void OpenEntries(IEnumerable<Vector2D<int>> entries)
 	{
 		foreach (var entry in entries)
 		{
 			OpenEntry(entry);
 		}
 
-		void OpenEntry(HexCoordinate entry)
+		void OpenEntry(Vector2D<int> entry)
 		{
 			if (entry.X == size - 1 && entry.Y == 0)
 			{

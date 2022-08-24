@@ -6,19 +6,19 @@ using System.Linq;
 
 namespace Maze;
 
-public class RectGrid : IGraph<RectCoordinate>, IGraphCreator<RectGrid>, IEnterable<RectCoordinate>, ISVGDrawable
+public class RectGrid : IGraph<Vector2D<uint>>, IGraphCreator<RectGrid>, IEnterable<Vector2D<uint>>, ISVGDrawable
 {
 	public static RectGrid Create(uint size) => new(size);
 
 	public IReadOnlyList<IReadOnlyList<RectNode>> Grid { get; }
 
-	public bool this[RectCoordinate a, RectCoordinate b]
+	public bool this[Vector2D<uint> a, Vector2D<uint> b]
 	{
 		get => GetWallReference(a, b);
 		set => GetWallReference(a, b) = value;
 	}
 
-	private RectNode this[RectCoordinate coordinate] =>
+	private RectNode this[Vector2D<uint> coordinate] =>
 		Grid[(int)coordinate.Y][(int)coordinate.X];
 
 	public RectGrid(uint size)
@@ -50,14 +50,28 @@ public class RectGrid : IGraph<RectCoordinate>, IGraphCreator<RectGrid>, IEntera
 		}
 	}
 
-	public IEnumerable<RectCoordinate> Neighbours(RectCoordinate current) =>
-		current.PossibleNeighbours()
+	public IEnumerable<Vector2D<uint>> Neighbours(Vector2D<uint> current) =>
+		PossibleNeighbours(current)
 			.Where(IsOnGrid);
 
-	private bool IsOnGrid(RectCoordinate coord) =>
+	public static IEnumerable<Vector2D<uint>> PossibleNeighbours(Vector2D<uint> coord)
+	{
+		if (coord.Y > 0)
+		{
+			yield return new(coord.X, coord.Y - 1);
+		}
+		if (coord.X > 0)
+		{
+			yield return new(coord.X - 1, coord.Y);
+		}
+		yield return new(coord.X + 1, coord.Y);
+		yield return new(coord.X, coord.Y + 1);
+	}
+
+	private bool IsOnGrid(Vector2D<uint> coord) =>
 		coord.Y < Grid.Count && coord.X < Grid[(int)coord.Y].Count;
 
-	private ref bool GetWallReference(RectCoordinate a, RectCoordinate b)
+	private ref bool GetWallReference(Vector2D<uint> a, Vector2D<uint> b)
 	{
 		(a, b) = OrderPositions(a, b);
 
@@ -78,12 +92,12 @@ public class RectGrid : IGraph<RectCoordinate>, IGraphCreator<RectGrid>, IEntera
 			throw new ArgumentException("Positions are not neighbours.");
 		}
 
-		static (RectCoordinate, RectCoordinate) OrderPositions(RectCoordinate a, RectCoordinate b) =>
+		static (Vector2D<uint>, Vector2D<uint>) OrderPositions(Vector2D<uint> a, Vector2D<uint> b) =>
 			a.Y <= b.Y && a.X <= b.X ?
 				(a, b) :
 				(b, a);
 
-		ref bool GetVerticalWallReference(RectCoordinate a, RectCoordinate b)
+		ref bool GetVerticalWallReference(Vector2D<uint> a, Vector2D<uint> b)
 		{
 			if (a.X + 1 == b.X)
 			{
@@ -95,7 +109,7 @@ public class RectGrid : IGraph<RectCoordinate>, IGraphCreator<RectGrid>, IEntera
 			}
 		}
 
-		ref bool GetHorizontalWallReference(RectCoordinate a, RectCoordinate b)
+		ref bool GetHorizontalWallReference(Vector2D<uint> a, Vector2D<uint> b)
 		{
 			if (a.Y + 1 == b.Y)
 			{
@@ -109,7 +123,7 @@ public class RectGrid : IGraph<RectCoordinate>, IGraphCreator<RectGrid>, IEntera
 
 	}
 
-	public IEnumerable<RectCoordinate> GenerateEntries(uint entryCount) =>
+	public IEnumerable<Vector2D<uint>> GenerateEntries(uint entryCount) =>
 		GenerateEntryIndices(entryCount)
 			.Select(EntryIndexToCoordinate);
 
@@ -121,7 +135,7 @@ public class RectGrid : IGraph<RectCoordinate>, IGraphCreator<RectGrid>, IEntera
 		return Enumerable.Range(0, (int)entryCount).Select(i => (uint)(i * spacing));
 	}
 
-	private RectCoordinate EntryIndexToCoordinate(uint index)
+	private Vector2D<uint> EntryIndexToCoordinate(uint index)
 	{
 		if (index < Grid[0].Count - 1)
 		{
@@ -145,14 +159,14 @@ public class RectGrid : IGraph<RectCoordinate>, IGraphCreator<RectGrid>, IEntera
 		throw new ArgumentOutOfRangeException();
 	}
 
-	public void OpenEntries(IEnumerable<RectCoordinate> entries)
+	public void OpenEntries(IEnumerable<Vector2D<uint>> entries)
 	{
 		foreach (var entry in entries)
 		{
 			OpenEntry(entry);
 		}
 
-		void OpenEntry(RectCoordinate entry)
+		void OpenEntry(Vector2D<uint> entry)
 		{
 			if (entry.Y == 0)
 			{

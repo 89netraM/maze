@@ -6,13 +6,13 @@ using System.Linq;
 
 namespace Maze;
 
-public class PolarGrid : IGraph<PolarPosition>, IGraphCreator<PolarGrid>, IEnterable<PolarPosition>, ISVGDrawable
+public class PolarGrid : IGraph<Vector2D<uint>>, IGraphCreator<PolarGrid>, IEnterable<Vector2D<uint>>, ISVGDrawable
 {
 	public static PolarGrid Create(uint size) => new(size);
 
 	public IReadOnlyList<IReadOnlyList<PolarCell>> Grid { get; }
 
-	public bool this[PolarPosition a, PolarPosition b]
+	public bool this[Vector2D<uint> a, Vector2D<uint> b]
 	{
 		get => GetWallReference(a, b);
 		set => GetWallReference(a, b) = value;
@@ -71,50 +71,50 @@ public class PolarGrid : IGraph<PolarPosition>, IGraphCreator<PolarGrid>, IEnter
 		}
 	}
 
-	public IEnumerable<PolarPosition> Neighbours(PolarPosition current)
+	public IEnumerable<Vector2D<uint>> Neighbours(Vector2D<uint> current)
 	{
-		if (current.Layer != 0)
+		if (current.Y != 0)
 		{
 			yield return GetInwardPosition();
 		}
-		if (current.Layer != 0)
+		if (current.Y != 0)
 		{
 			yield return GetCounterClockwisePosition();
 		}
-		if (current.Layer != 0)
+		if (current.Y != 0)
 		{
 			yield return GetClockwisePosition();
 		}
-		if (current.Layer + 1 < Grid.Count)
+		if (current.Y + 1 < Grid.Count)
 		{
-			var outwardCount = Grid[(int)current.Layer][(int)current.Cell].Outward.Length;
+			var outwardCount = Grid[(int)current.Y][(int)current.X].Outward.Length;
 			for (uint index = 0; index < outwardCount; index++)
 			{
 				yield return GetOutwardPosition(index);
 			}
 		}
 
-		PolarPosition GetInwardPosition() =>
-			new(current.Layer - 1,
-				current.Cell / CalculateOutwardCountRatio(current.Layer - 1));
+		Vector2D<uint> GetInwardPosition() =>
+			new(current.X / CalculateOutwardCountRatio(current.Y - 1),
+				current.Y - 1);
 
-		PolarPosition GetCounterClockwisePosition() =>
-			new(current.Layer,
-				(current.Cell - 1 + (uint)Grid[(int)current.Layer].Count) % (uint)Grid[(int)current.Layer].Count);
+		Vector2D<uint> GetCounterClockwisePosition() =>
+			new((current.X - 1 + (uint)Grid[(int)current.Y].Count) % (uint)Grid[(int)current.Y].Count,
+				current.Y);
 
-		PolarPosition GetClockwisePosition() =>
-			new(current.Layer,
-				(current.Cell + 1) % (uint)Grid[(int)current.Layer].Count);
+		Vector2D<uint> GetClockwisePosition() =>
+			new((current.X + 1) % (uint)Grid[(int)current.Y].Count,
+				current.Y);
 
-		PolarPosition GetOutwardPosition(uint outwardIndex) =>
-			new(current.Layer + 1,
-				current.Cell * CalculateOutwardCountRatio(current.Layer) + outwardIndex);
+		Vector2D<uint> GetOutwardPosition(uint outwardIndex) =>
+			new(current.X * CalculateOutwardCountRatio(current.Y) + outwardIndex,
+				current.Y + 1);
 
 		uint CalculateOutwardCountRatio(uint layer) =>
 			(uint)(Grid[(int)layer + 1].Count / Grid[(int)layer].Count);
 	}
 
-	private ref bool GetWallReference(PolarPosition a, PolarPosition b)
+	private ref bool GetWallReference(Vector2D<uint> a, Vector2D<uint> b)
 	{
 		(a, b) = OrderPositions(a, b);
 
@@ -122,11 +122,11 @@ public class PolarGrid : IGraph<PolarPosition>, IGraphCreator<PolarGrid>, IEnter
 		{
 			throw new ArgumentException("Positions are equal.");
 		}
-		else if (a.Layer == b.Layer)
+		else if (a.Y == b.Y)
 		{
 			return ref GetVerticalWallReference(a, b);
 		}
-		else if (a.Layer + 1 == b.Layer)
+		else if (a.Y + 1 == b.Y)
 		{
 			return ref GetHorizontalWallReference(a, b);
 		}
@@ -135,20 +135,20 @@ public class PolarGrid : IGraph<PolarPosition>, IGraphCreator<PolarGrid>, IEnter
 			throw new ArgumentException("Positions are not neighbours.");
 		}
 
-		static (PolarPosition, PolarPosition) OrderPositions(PolarPosition a, PolarPosition b) =>
-			a.Layer <= b.Layer && a.Cell <= b.Cell ?
+		static (Vector2D<uint>, Vector2D<uint>) OrderPositions(Vector2D<uint> a, Vector2D<uint> b) =>
+			a.Y <= b.Y && a.X <= b.X ?
 				(a, b) :
 				(b, a);
 
-		ref bool GetVerticalWallReference(PolarPosition a, PolarPosition b)
+		ref bool GetVerticalWallReference(Vector2D<uint> a, Vector2D<uint> b)
 		{
-			if (a.Cell + 1 == b.Cell)
+			if (a.X + 1 == b.X)
 			{
-				return ref Grid[(int)a.Layer][(int)a.Cell].clockwise;
+				return ref Grid[(int)a.Y][(int)a.X].clockwise;
 			}
-			else if (a.Cell == 0 && b.Cell == Grid[(int)a.Layer].Count - 1)
+			else if (a.X == 0 && b.X == Grid[(int)a.Y].Count - 1)
 			{
-				return ref Grid[(int)a.Layer][^1].clockwise;
+				return ref Grid[(int)a.Y][^1].clockwise;
 			}
 			else
 			{
@@ -156,12 +156,12 @@ public class PolarGrid : IGraph<PolarPosition>, IGraphCreator<PolarGrid>, IEnter
 			}
 		}
 
-		ref bool GetHorizontalWallReference(PolarPosition a, PolarPosition b)
+		ref bool GetHorizontalWallReference(Vector2D<uint> a, Vector2D<uint> b)
 		{
-			var aOutwardCount = Grid[(int)a.Layer][(int)a.Cell].Outward.Length;
-			if (a.Cell == b.Cell / aOutwardCount)
+			var aOutwardCount = Grid[(int)a.Y][(int)a.X].Outward.Length;
+			if (a.X == b.X / aOutwardCount)
 			{
-				return ref Grid[(int)a.Layer][(int)a.Cell].Outward[b.Cell % aOutwardCount];
+				return ref Grid[(int)a.Y][(int)a.X].Outward[b.X % aOutwardCount];
 			}
 			else
 			{
@@ -170,7 +170,7 @@ public class PolarGrid : IGraph<PolarPosition>, IGraphCreator<PolarGrid>, IEnter
 		}
 	}
 
-	public IEnumerable<PolarPosition> GenerateEntries(uint entryCount)
+	public IEnumerable<Vector2D<uint>> GenerateEntries(uint entryCount)
 	{
 		if (entryCount == 0 || entryCount > Grid[^1].Count)
 		{
@@ -179,19 +179,19 @@ public class PolarGrid : IGraph<PolarPosition>, IGraphCreator<PolarGrid>, IEnter
 
 		var spacing = Grid[^1].Count / entryCount;
 		return Enumerable.Range(0, (int)entryCount)
-			.Select(i => new PolarPosition((uint)Grid.Count - 1, (uint)(i * spacing)));
+			.Select(i => new Vector2D<uint>((uint)(i * spacing), (uint)Grid.Count - 1));
 	}
 
-	public void OpenEntries(IEnumerable<PolarPosition> entries)
+	public void OpenEntries(IEnumerable<Vector2D<uint>> entries)
 	{
 		foreach (var entry in entries)
 		{
 			OpenEntry(entry);
 		}
 
-		void OpenEntry(PolarPosition entry)
+		void OpenEntry(Vector2D<uint> entry)
 		{
-			Grid[(int)entry.Layer][(int)entry.Cell].Outward = new[] { false };
+			Grid[(int)entry.Y][(int)entry.X].Outward = new[] { false };
 		}
 	}
 
@@ -263,11 +263,6 @@ public class PolarGrid : IGraph<PolarPosition>, IGraphCreator<PolarGrid>, IEnter
 		}
 	}
 }
-
-/// <summary>
-/// A position in a <see cref="PolarGrid"/> reprecented by <paramref name="Layer"/> and <paramref name="Cell"/>.
-/// </summary>
-public record PolarPosition(uint Layer, uint Cell);
 
 /// <summary>
 /// A single cell in a <see cref="PolarGrid"/> containing the clockwise and outward walls.

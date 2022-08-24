@@ -7,5 +7,6 @@
 	</PropertyGroup>
 	<ItemGroup>
 	  <PackageReference Include="SkiaSharp" Version="2.88.0" />
+	  <PackageReference Include="System.Runtime.Experimental" Version="6.0.2" />
 	</ItemGroup>
 </Project>

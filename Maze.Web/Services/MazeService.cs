@@ -10,10 +10,10 @@ public class MazeService
 	{
 		var maze = mazeKind switch
 		{
-			MazeKind.Polar => GenerateMaze<PolarGrid, PolarPosition>(config),
-			MazeKind.HexHex => GenerateMaze<HexHexGrid, HexCoordinate>(config),
-			MazeKind.TriHex => GenerateMaze<TriHexGrid, HexCoordinate>(config),
-			MazeKind.Rect => GenerateMaze<RectGrid, RectCoordinate>(config),
+			MazeKind.Polar => GenerateMaze<PolarGrid, Vector2D<uint>>(config),
+			MazeKind.HexHex => GenerateMaze<HexHexGrid, Vector2D<int>>(config),
+			MazeKind.TriHex => GenerateMaze<TriHexGrid, Vector2D<int>>(config),
+			MazeKind.Rect => GenerateMaze<RectGrid, Vector2D<uint>>(config),
 			_ => throw new ArgumentException(),
 		};
 		maze.DrawSVG(outputStream);

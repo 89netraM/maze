@@ -6,27 +6,37 @@ using System.Linq;
 
 namespace Maze;
 
-public abstract class HexGrid : IGraph<HexCoordinate>, ISVGDrawable
+public abstract class HexGrid : IGraph<Vector2D<int>>, ISVGDrawable
 {
 	private delegate void HexEdgeVisitor(ref bool a, ref bool b);
 
-	public IReadOnlyDictionary<HexCoordinate, HexNode> Map { get; }
+	protected static IReadOnlyList<Vector2D<int>> Directions { get; } = new Vector2D<int>[]
+	{
+		new(1, 0),
+		new(1, -1),
+		new(0, -1),
+		new(-1, 0),
+		new(-1, 1),
+		new(0, 1),
+	};
 
-	public bool this[HexCoordinate a, HexCoordinate b]
+	public IReadOnlyDictionary<Vector2D<int>, HexNode> Map { get; }
+
+	public bool this[Vector2D<int> a, Vector2D<int> b]
 	{
 		get => GetWallReference(a, b);
 		set => GetWallReference(a, b) = value;
 	}
 
-	protected HexGrid(IReadOnlyDictionary<HexCoordinate, HexNode> map) =>
+	protected HexGrid(IReadOnlyDictionary<Vector2D<int>, HexNode> map) =>
 		(Map) = (map);
 
-	public IEnumerable<HexCoordinate> Neighbours(HexCoordinate current) =>
-		HexCoordinate.Directions
+	public IEnumerable<Vector2D<int>> Neighbours(Vector2D<int> current) =>
+		Directions
 			.Select(direction => current + direction)
 			.Where(Map.ContainsKey);
 
-	private ref bool GetWallReference(HexCoordinate a, HexCoordinate b)
+	private ref bool GetWallReference(Vector2D<int> a, Vector2D<int> b)
 	{
 		if (a == b)
 		{
@@ -47,7 +57,7 @@ public abstract class HexGrid : IGraph<HexCoordinate>, ISVGDrawable
 				throw new ArgumentException("Positions are not neighbours.");
 		}
 
-		static (HexCoordinate, HexCoordinate) OrderCoordinates(HexCoordinate a, HexCoordinate b)
+		static (Vector2D<int>, Vector2D<int>) OrderCoordinates(Vector2D<int> a, Vector2D<int> b)
 		{
 			if (a.X < b.X || (a.X == b.X && a.Y > b.Y))
 			{
@@ -80,9 +90,9 @@ public abstract class HexGrid : IGraph<HexCoordinate>, ISVGDrawable
 			DrawHex(kvp.Key, kvp.Value);
 		}
 
-		(HexCoordinate min, HexCoordinate max) FindMinMax()
+		(Vector2D<int> min, Vector2D<int> max) FindMinMax()
 		{
-			HexCoordinate min, max;
+			Vector2D<int> min, max;
 			min = max = Map.Keys.First();
 			foreach (var coordinate in Map.Keys)
 			{
@@ -92,18 +102,18 @@ public abstract class HexGrid : IGraph<HexCoordinate>, ISVGDrawable
 			return (min, max);
 		}
 
-		static SKCanvas CreateCanvas(Stream outputStream, HexCoordinate min, HexCoordinate max) =>
+		static SKCanvas CreateCanvas(Stream outputStream, Vector2D<int> min, Vector2D<int> max) =>
 			SKSvgCanvas.Create(
 				SKRect.Create(CalculateTotalWidth(min, max), CalculateTotalHeight(min, max)),
 				outputStream);
 
-		static float CalculateTotalWidth(HexCoordinate min, HexCoordinate max) =>
+		static float CalculateTotalWidth(Vector2D<int> min, Vector2D<int> max) =>
 			(max.X - min.X) * HORIZONTAL_SPACING * 2.0f + HORIZONTAL_SPACING * 2.0f;
 
-		static float CalculateTotalHeight(HexCoordinate min, HexCoordinate max) =>
+		static float CalculateTotalHeight(Vector2D<int> min, Vector2D<int> max) =>
 			(max.Y - min.Y) * VERTICAL_SPACING + SIZE * 2.0f;
 
-		void DrawHex(HexCoordinate coord, HexNode node)
+		void DrawHex(Vector2D<int> coord, HexNode node)
 		{
 			var hexPixelOffset = new SKPoint(0.0f, SIZE);
 			var pixelCenter = HexToPixelCoordinates(coord) + hexPixelOffset + canvasOffset;
@@ -140,40 +150,9 @@ public abstract class HexGrid : IGraph<HexCoordinate>, ISVGDrawable
 			}
 		}
 
-		static SKPoint HexToPixelCoordinates(HexCoordinate coord) =>
+		static SKPoint HexToPixelCoordinates(Vector2D<int> coord) =>
 			new(2.0f * HORIZONTAL_SPACING * coord.X + HORIZONTAL_SPACING * coord.Y, VERTICAL_SPACING * coord.Y);
 	}
-}
-
-public record HexCoordinate(int X, int Y)
-{
-	public static IReadOnlyList<HexCoordinate> Directions { get; } = new HexCoordinate[]
-	{
-		new(1, 0),
-		new(1, -1),
-		new(0, -1),
-		new(-1, 0),
-		new(-1, 1),
-		new(0, 1),
-	};
-
-	public HexCoordinate MinPart(HexCoordinate other) =>
-		new(Math.Min(X, other.X), Math.Min(Y, other.Y));
-
-	public HexCoordinate MaxPart(HexCoordinate other) =>
-		new(Math.Max(X, other.X), Math.Max(Y, other.Y));
-
-	public static HexCoordinate operator +(HexCoordinate a, HexCoordinate b) =>
-		new(a.X + b.X, a.Y + b.Y);
-
-	public static HexCoordinate operator -(HexCoordinate coord) =>
-		new(-coord.X, -coord.Y);
-
-	public static HexCoordinate operator -(HexCoordinate a, HexCoordinate b) =>
-		a + (-b);
-
-	public static HexCoordinate operator *(HexCoordinate coord, int facor) =>
-		new(coord.X * facor, coord.Y * facor);
 }
 
 public class HexNode
