@@ -8,7 +8,7 @@ namespace Maze;
 
 public class TriGrid : IGraph<Vector2D<int>>, IGraphCreator<TriGrid>, IEnterable<Vector2D<int>>, ISVGDrawable
 {
-	public static TriGrid Create(uint size) => new(size);
+	public static TriGrid Create(uint size, Random random) => new(size);
 
 	public IReadOnlyDictionary<Vector2D<int>, TriNode> Map { get; }
 
