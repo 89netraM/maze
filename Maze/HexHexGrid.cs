@@ -6,7 +6,7 @@ namespace Maze;
 
 public class HexHexGrid : HexGrid, IGraphCreator<HexHexGrid>, IEnterable<Vector2D<int>>
 {
-	public static HexHexGrid Create(uint size) => new(size);
+	public static HexHexGrid Create(uint size, Random random) => new(size);
 
 	private static IReadOnlyDictionary<Vector2D<int>, HexNode> GenerateHexGrid(uint size)
 	{

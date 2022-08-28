@@ -8,7 +8,7 @@ namespace Maze;
 
 public class PolarGrid : IGraph<Vector2D<uint>>, IGraphCreator<PolarGrid>, IEnterable<Vector2D<uint>>, ISVGDrawable
 {
-	public static PolarGrid Create(uint size) => new(size);
+	public static PolarGrid Create(uint size, Random random) => new(size);
 
 	public IReadOnlyList<IReadOnlyList<PolarCell>> Grid { get; }
 

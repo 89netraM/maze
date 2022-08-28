@@ -8,7 +8,7 @@ namespace Maze;
 
 public class RectGrid : IGraph<Vector2D<uint>>, IGraphCreator<RectGrid>, IEnterable<Vector2D<uint>>, ISVGDrawable
 {
-	public static RectGrid Create(uint size) => new(size);
+	public static RectGrid Create(uint size, Random random) => new(size);
 
 	public IReadOnlyList<IReadOnlyList<RectNode>> Grid { get; }
 
